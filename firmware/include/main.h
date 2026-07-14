@@ -21,6 +21,7 @@ void check_motor_signal(void);
 
 void init_key_inputs(void);
 uint8_t get_key_from_buffer(void);
+void show_longpress(void);
 void update_gui(void);
 void check_menu_events(const uint16_t menu_event);
 void set_gui_mode(const uint8_t gui_mode);
@@ -32,8 +33,8 @@ void infomode_update(void);
 void handle_selector_image(void);
 void insert_menu_image(char* menu_path);
 
-uint16_t get_dir_entry_count(char* entrycount_path);
-uint16_t seek_to_dir_entry(uint16_t entry_num, char* seek_path);
+uint16_t get_dir_entry_count(const char* entrycount_path);
+uint16_t seek_to_dir_entry(uint16_t entry_num, const char* seek_path);
 
 void show_start_message(void);
 void show_sdcard_info_message(void);
@@ -47,7 +48,7 @@ void init_soe_gatearray(void);
 
 uint8_t open_dir_entry(FILINFO od_file_entry);
 
-void open_disk_image(FIL* fd, FILINFO *file_entry, uint8_t* image_type);
+uint8_t open_disk_image(FIL* fd, FILINFO *file_entry);
 void close_disk_image(FIL* fd);
 void unmount_image(void);
 
@@ -92,11 +93,8 @@ void start_stepper_timer(void);
 
 // Filesystem-variables:
 FATFS       fs;             // filesystem handle - only created once
-FRESULT     fr;             // general purpos result variable
 DIR         dir_object;
 FIL         fd;             // file descriptor for every open file
-FILINFO     dir_entry;
-FILINFO     file_entry;
 FILINFO     fb_dir_entry[LCD_LINE_COUNT];
 //
 //
@@ -145,11 +143,11 @@ bool is_image_mount;
 bool floppy_wp = true;  // Hier wird der aktuelle WriteProtection Zustand gespeichert
                         // false=Nicht Schreibgeschützt , true=Schreibgeschützt
 
+#define STEP_MIN_TIME (2000)    // us between 2 step changes.
+
 uint8_t stepper_signal_puffer[256]; // Ringpuffer für Stepper Signale (256 Bytes)
 volatile uint8_t stepper_signal_r_pos = 0;
 volatile uint8_t stepper_signal_w_pos = 0;
-volatile uint16_t stepper_signal_time = 0;  // extended to 16bit to cover bigger step-wait times
-volatile uint8_t stepper_signal = 0;
 
 alarm_id_t stepper_alarm = 0;
 
@@ -158,4 +156,3 @@ volatile bool send_byte_ready    = true;
 
 volatile uint8_t  track_write_nr;
 volatile uint16_t track_write_pos;
-
